@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+
+<style>
+    .none-flash {
+        display: none;
+    }
+</style>
+
+<script>
+    $(document).ready(() => {
+        $('#btnlogin').on('click', () => {
+            var username = $('#username').val();
+            var password = $('#password').val();
+            let user = { username, password };
+            $.ajax({
+                type: "POST",
+                url: `${window.location.origin}/login`,
+                data: user,
+                withCredentials: true,
+                success: function (data) {
+                    $('#flash').addClass("none-flash");
+                    window.location.href = '/';
+                },
+                error: function (err) {
+                    $('#flash').removeClass("none-flash")
+                    $('#flash').text(err.responseText);
+                }
+            })
+
+        })
+    })
+
+</script>
+
+<body>
+    <div class="container">
+        <fieldset class="border p-2 w-50 mx-auto my-5">
+            <legend class="float-none w-auto fw-bold fst-italic">LOGIN</legend>
+            <div class="container">
+                <div class="alert alert-danger none-flash" role="alert" id="flash">
+
+                </div>
+                <div class="form-group">
+                    <label class="fw-bold" for="username">Username:</label>
+                    <input type="text" class="form-control" id="username" placeholder="Enter username" name="username">
+                </div>
+                <div class="form-group my-3">
+                    <label class="fw-bold" for="password">Password:</label>
+                    <input type="password" class="form-control" id="password" placeholder="Enter password"
+                        name="password">
+                </div>
+                <button type="button" id="btnlogin" class=" btn btn-primary">Submit</button>
+            </div>
+        </fieldset>
+    </div>
+
+</body>
+
+</html>
