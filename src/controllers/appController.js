@@ -1,5 +1,7 @@
 import appService from '../connectDB/appService';
 import JWTAction from '../middleware/JWTAction';
+import { v4 as uuidv4 } from 'uuid';
+import adminService from '../connectDB/adminService';
 
 let createNewUser = async (req, res) => {
     let response = await appService.createNewUserSV(req.body);
@@ -47,9 +49,10 @@ let checkLoginJWT = async (req, res) => {
 
 let Logout = async (req, res) => {
     try {
-        let jwt = req.cookies.jwt;
-        if (jwt) {
-            res.clearCookie('jwt');
+        let accesstoken = req.cookies.accesstoken;
+        if (accesstoken) {
+            res.clearCookie('accesstoken');
+            res.clearCookie('refreshtoken');
             return res.status(200).json({
                 errCode: 0,
                 message: 'Logout success',
@@ -67,10 +70,57 @@ let Logout = async (req, res) => {
     }
 }
 
+let verifySSOToken = async (req, res) => {
+    try {
+        let sso = req?.body?.ssoToken;
+        if (req?.user?.code && req.user.code === sso) {
+            const refreshToken = uuidv4();
+            await appService.updateToken(req?.user?.email, refreshToken);
+            let roles = await adminService.getRoleWithGroup(req.user.groupID);
+            let payload = JWTAction.createJWT({
+                email: req.user.email,
+                roles: roles.data,
+                username: req.user.username,
+            });
+            res.cookie('accesstoken', payload, { maxAge: 30 * 10 * 1000, httpOnly: true })
+            res.cookie('refreshtoken', refreshToken, { maxAge: 30 * 10 * 1000, httpOnly: true })
+            let response = {
+                errCode: 0,
+                message: 'Success',
+                data: {
+                    accessToken: payload,
+                    refresh: refreshToken,
+                    roles: roles.data,
+                    username: req.user.username,
+                    email: req.user.email,
+                }
+            };
+            req.logout();
+            return res.status(200).json(response)
+        } else {
+            return res.status(401).json({
+                errCode: 1,
+                message: 'Not match'
+            })
+        }
+
+    } catch (e) {
+        console.log(e);
+        return res.status(200).json({
+            errCode: -1,
+            message: 'Error from the server'
+        });
+    }
+}
+
+
+
+
 
 module.exports = {
     createNewUser,
     login,
     checkLoginJWT,
-    Logout
+    Logout,
+    verifySSOToken
 }

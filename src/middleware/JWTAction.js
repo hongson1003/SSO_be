@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-const unCheck = ['/', '/api/register', '/api/login', '/api/check-login', '/api/clear-cookie', '/api/get-all-roles', '/api/create-roles', '/api/delete-role', '/api/get-all-group', '/api/role-with-group', '/api/add-roles-for-group'];
+const unCheck = ['/', '/api/register', '/login', '/logout', '/verify', '/api/login', '/api/check-login', '/api/clear-cookie', '/api/get-all-roles', '/api/create-roles', '/api/delete-role', '/api/get-all-group', '/api/role-with-group', '/api/add-roles-for-group', '/api/account'];
 
 let createJWT = (payload) => {
     let key = process.env.JWT_SECRET;
@@ -23,15 +23,14 @@ let verifyJWT = (token) => {
     }
 }
 let isLogin = async (req, res, next) => {
-    if (unCheck.includes(req.path)) {
+    if (unCheck.includes(req.path) || req.path === '/api/account') {
         return next();
     }
-
     let jwt = req.cookies.jwt;
     if (jwt) {
         let data = verifyJWT(jwt);
         if (data) {
-            req.roles = data;
+            req.user = data;
             return next();
         } else {
             return res.status(401).json({

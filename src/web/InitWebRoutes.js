@@ -5,15 +5,17 @@ import adminController from '../controllers/adminController';
 import viewController from '../controllers/viewController';
 import passport from "passport";
 import checkLogin from '../middleware/checkLogin';
-
+import JWTAction from '../middleware/JWTAction';
 
 let router = express.Router();
 
 const InitWebRoutes = (app) => {
-    // router.all('*', JWTAction.isLogin, JWTAction.checkPermission);
-    router.get('/', checkLogin.isLogin, viewController.viewHome);
-    router.get('/login', checkLogin.isLogin, viewController.viewLogin);
+    router.all('*', JWTAction.isLogin, JWTAction.checkPermission);
 
+
+    router.get('/', viewController.viewHome);
+    router.get('/login', checkLogin.isLogin, viewController.viewLogin);
+    router.post('/api/account', userController.checkAccount);
     router.post('/login', function (req, res, next) {
         passport.authenticate('local', function (error, user, info) {
             if (error) {
@@ -26,16 +28,26 @@ const InitWebRoutes = (app) => {
                 if (err) {
                     return next(err);
                 }
-                return res.status(200).json(user);
+                let origin = req.body.origin;
+                return res.status(200).json({
+                    ...user,
+                    origin
+                });
             });
 
         })(req, res, next);
     });
+    router.post('/verify', appController.verifySSOToken);
 
     router.post('/logout', function (req, res, next) {
         req.logout();
         return res.redirect('/login');
     });
+
+
+
+
+    router.get('/api/check-login', appController.checkLoginJWT);
 
 
 
@@ -51,7 +63,7 @@ const InitWebRoutes = (app) => {
     router.get('/api/get-all-group', adminController.getAllGroup);
     router.post('/api/new-user', adminController.newUser);
     router.put('/api/update-user', adminController.updateUser);
-    router.get('/api/check-login', appController.checkLoginJWT);
+
     router.get('/api/clear-cookie', appController.Logout);
     router.get('/api/get-all-roles', adminController.getAllRoles);
     router.post('/api/create-roles', adminController.createRoles);

@@ -29,7 +29,7 @@ let configSession = async (app) => {
         saveUninitialized: true,
         store,
         cookie: {
-            maxAge: 30 * 1000,
+            maxAge: 60 * 1000,
             rolling: true,
             unset: 'destroy',
             secure: false
@@ -47,7 +47,6 @@ let configSession = async (app) => {
 
     passport.deserializeUser(function (user, cb) {
         process.nextTick(function () {
-
             return cb(null, user);
         });
     });

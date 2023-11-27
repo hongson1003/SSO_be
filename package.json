@@ -21,7 +21,10 @@
     "express": "4.17.1",
     "jsonwebtoken": "8.5.1",
     "knex": "^3.0.1",
-    "nodemon": "2.0.7"
+    "nodemon": "2.0.7",
+    "passport-facebook": "3.0.0",
+    "passport-google-oauth20": "2.0.0",
+    "uuid": "8.3.2"
   },
   "devDependencies": {
     "bootstrap": "^5.3.2",

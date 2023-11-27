@@ -1,8 +1,8 @@
 import sql from 'mssql';
 import ConfigSQl from './ConfigSQl';
 import existEmailOrPhone from '../ultis/existEmailOrPhone';
-import jwtService from '../connectDB/jwtService';
-import JWTAction from '../middleware/JWTAction';
+import { v4 as uuidv4 } from 'uuid';
+import adminService from '../connectDB/adminService';
 
 let createNewUserSV = async (data) => {
     try {
@@ -56,14 +56,15 @@ let login = async (account) => {
         await sql.close();
         if (isExists.length > 0) {
             if (isExists[0].Password === account.password) {
-                let roles = await jwtService.getRolesFromGroupID(isExists[0].GroupID);
-                let token = JWTAction.createJWT({ roles });
+                let code = uuidv4();
                 return {
                     errCode: 0,
                     message: 'Login success',
                     data: {
-                        id: isExists[0].UserID,
-                        access: token
+                        code,
+                        email: account.accountName,
+                        groupID: isExists[0].GroupID,
+                        username: isExists[0].UserName,
                     },
                 }
             } else {
@@ -88,8 +89,28 @@ let login = async (account) => {
 }
 
 
+let updateToken = async (email, refreshToken) => {
+    try {
+        await sql.connect(ConfigSQl);
+        await sql.query(`
+            UPDATE [User]
+            SET RefreshToken = '${refreshToken}'
+            WHERE email like '${email}'
+        `)
+        await sql.close();
+    } catch (e) {
+        console.log(e);
+        return {
+            errCode: -1,
+            message: 'Error from the server'
+        }
+    }
+}
+
+
 module.exports = {
     createNewUserSV,
-    login
+    login,
+    updateToken
 }
 

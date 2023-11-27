@@ -6,6 +6,7 @@ let configPassportLocal = async () => {
     passport.use(new LocalStrategy({
         passReqToCallback: true
     }, async (req, username, password, cb) => {
+
         let user = {
             accountName: username,
             password

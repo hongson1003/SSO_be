@@ -14,6 +14,13 @@
     .none-flash {
         display: none;
     }
+
+    .image-icon {
+        width: 80px;
+        margin: 5px 10px;
+        cursor: pointer;
+
+    }
 </style>
 
 <script>
@@ -21,7 +28,8 @@
         $('#btnlogin').on('click', () => {
             var username = $('#username').val();
             var password = $('#password').val();
-            let user = { username, password };
+            var origin = JSON.parse('<%- redirectURL %>');
+            let user = { username, password, origin };
             $.ajax({
                 type: "POST",
                 url: `${window.location.origin}/login`,
@@ -29,7 +37,7 @@
                 withCredentials: true,
                 success: function (data) {
                     $('#flash').addClass("none-flash");
-                    window.location.href = '/';
+                    window.location.href = `${data.origin}/codeToken?sso=${data.code}`;
                 },
                 error: function (err) {
                     $('#flash').removeClass("none-flash")
@@ -44,11 +52,11 @@
 
 <body>
     <div class="container">
+        <input hidden disabled value="<%= redirectURL %>" />
         <fieldset class="border p-2 w-50 mx-auto my-5">
             <legend class="float-none w-auto fw-bold fst-italic">LOGIN</legend>
             <div class="container">
                 <div class="alert alert-danger none-flash" role="alert" id="flash">
-
                 </div>
                 <div class="form-group">
                     <label class="fw-bold" for="username">Username:</label>
@@ -58,6 +66,10 @@
                     <label class="fw-bold" for="password">Password:</label>
                     <input type="password" class="form-control" id="password" placeholder="Enter password"
                         name="password">
+                </div>
+                <div class="row d-flex justify-content-center">
+                    <img class="image-icon" src="/image/googleicon.png" />
+                    <img class="image-icon" src="/image/facebookicon.webp" />
                 </div>
                 <button type="button" id="btnlogin" class=" btn btn-primary">Submit</button>
             </div>
