@@ -2,7 +2,6 @@ import sql from 'mssql';
 import ConfigSQl from './ConfigSQl';
 import existEmailOrPhone from '../ultis/existEmailOrPhone';
 import { v4 as uuidv4 } from 'uuid';
-import adminService from '../connectDB/adminService';
 
 let createNewUserSV = async (data) => {
     try {
@@ -108,9 +107,47 @@ let updateToken = async (email, refreshToken) => {
 }
 
 
+let upsertSocialMedia = async (type, rawData) => {
+    try {
+        await sql.connect(ConfigSQl);
+        // Kiểm tra xem dữ liệu đã tồn tại hay chưa
+        const result = await sql.query(`
+            SELECT *
+            FROM [User]
+            WHERE Email like '${rawData.email}'`);
+        if (result.recordset.length > 0) {
+            // Dữ liệu đã tồn tại, thực hiện UPDATE
+            let token = uuidv4();
+            await sql.query(`
+                UPDATE [User]
+                SET Type = '${type}', RefreshToken = '${token}'
+                Where email like '${rawData.email}'
+            `,);
+        } else {
+            // Dữ liệu chưa tồn tại, thực hiện INSERT
+            await sql.query(`
+                INSERT INTO [User] (Type, Email, Username, GroupID)
+                VALUES ('${type}', '${rawData.email}', N'${rawData.username}', 4 )
+            `);
+        }
+        const kq = await sql.query(`
+            SELECT *
+            FROM [User]
+            WHERE email like '${rawData.email}'`);
+        await sql.close();
+        return kq.recordset[0];
+    } catch (e) {
+        console.log(e);
+        return null;
+    }
+};
+
+
+
 module.exports = {
     createNewUserSV,
     login,
-    updateToken
+    updateToken,
+    upsertSocialMedia
 }
 

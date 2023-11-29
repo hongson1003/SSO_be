@@ -21,7 +21,7 @@ let configSession = async (app) => {
         knex,
         tablename: 'sessions',
         sidfieldname: 'sid',
-        clearInterval: 30 * 15 * 1000,
+        clearInterval: 30 * 1000,
     });
     app.use(session({
         secret: 'your_secret_key',

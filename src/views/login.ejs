@@ -15,8 +15,12 @@
         display: none;
     }
 
+    a {
+        width: auto !important;
+    }
+
     .image-icon {
-        width: 80px;
+        width: 55px;
         margin: 5px 10px;
         cursor: pointer;
 
@@ -46,6 +50,17 @@
             })
 
         })
+        $('#google-icon').on('click', () => {
+            localStorage.removeItem('clientURL')
+            var origin = JSON.parse('<%- redirectURL %>');
+            localStorage.setItem('clientURL', origin)
+        }) //facebook-icon
+        $('#facebook-icon').on('click', () => {
+            localStorage.removeItem('clientURL')
+            var origin = JSON.parse('<%- redirectURL %>');
+            localStorage.setItem('clientURL', origin)
+        })
+
     })
 
 </script>
@@ -68,10 +83,14 @@
                         name="password">
                 </div>
                 <div class="row d-flex justify-content-center">
-                    <img class="image-icon" src="/image/googleicon.png" />
-                    <img class="image-icon" src="/image/facebookicon.webp" />
+                    <a href="/auth/google">
+                        <img id="google-icon" class="image-icon" src="/image/googleicon.png" />
+                    </a>
+                    <a href="/auth/facebook">
+                        <img id="facebook-icon" class="image-icon" src="/image/facebookicon.webp" />
+                    </a>
                 </div>
-                <button type="button" id="btnlogin" class=" btn btn-primary">Submit</button>
+                <button type="button" id="btnlogin" class=" btn btn-primary">Đăng nhập</button>
             </div>
         </fieldset>
     </div>

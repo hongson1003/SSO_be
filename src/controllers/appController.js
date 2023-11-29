@@ -17,9 +17,9 @@ let login = async (req, res) => {
     return res.status(200).json(response);
 }
 
-let checkLoginJWT = async (req, res) => {
+let checkLoginJWT = async (req, res, key) => {
     try {
-        let jwt = req.cookies.jwt;
+        let jwt = req.cookies[key];
         if (jwt) {
             let data = JWTAction.verifyJWT(jwt);
             if (data) {
@@ -75,24 +75,26 @@ let verifySSOToken = async (req, res) => {
         let sso = req?.body?.ssoToken;
         if (req?.user?.code && req.user.code === sso) {
             const refreshToken = uuidv4();
-            await appService.updateToken(req?.user?.email, refreshToken);
-            let roles = await adminService.getRoleWithGroup(req.user.groupID);
+            await appService.updateToken(req?.user?.email || req?.user?.Email, refreshToken);
+            let roles = await adminService.getRoleWithGroup(req.user.groupID || req.user.GroupID);
             let payload = JWTAction.createJWT({
-                email: req.user.email,
+                email: req.user.email || req.user.Email,
                 roles: roles.data,
-                username: req.user.username,
+                username: req.user.username || req.user.UserName,
             });
-            res.cookie('accesstoken', payload, { maxAge: 30 * 10 * 1000, httpOnly: true })
-            res.cookie('refreshtoken', refreshToken, { maxAge: 30 * 10 * 1000, httpOnly: true })
+
+            res.cookie('accesstoken', payload, { maxAge: 15 * 60 * 1000, httpOnly: true });
+            res.cookie('refreshtoken', refreshToken, { maxAge: 15 * 60 * 1000, httpOnly: true });
+
             let response = {
                 errCode: 0,
                 message: 'Success',
                 data: {
                     accessToken: payload,
                     refresh: refreshToken,
+                    email: req.user.email || req.user.Email,
                     roles: roles.data,
-                    username: req.user.username,
-                    email: req.user.email,
+                    username: req.user.username || req.user.UserName,
                 }
             };
             req.logout();
@@ -117,10 +119,12 @@ let verifySSOToken = async (req, res) => {
 
 
 
+
+
 module.exports = {
     createNewUser,
     login,
     checkLoginJWT,
     Logout,
-    verifySSOToken
+    verifySSOToken,
 }

@@ -16,7 +16,28 @@ let getRolesFromGroupID = async (groupID) => {
         console.log(e);
     }
 }
+let handleGetUserFromRefreshToken = async (refreshToken) => {
+    try {
+        await sql.connect(ConfigSQl);
+        let result1 = await sql.query`
+        select u.email, u.userID, u.groupID
+        from [user] as u
+        where u.RefreshToken = ${refreshToken}
+        `;
+        await sql.close();
+        let user = result1.recordset[0];
+        let roles = await getRolesFromGroupID(user.groupID);
+        let data = {
+            ...user,
+            roles,
+        }
+        return data;
+    } catch (e) {
+        console.log(e);
+    }
+}
 
 module.exports = {
-    getRolesFromGroupID
+    getRolesFromGroupID,
+    handleGetUserFromRefreshToken
 }
